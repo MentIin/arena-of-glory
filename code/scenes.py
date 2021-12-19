@@ -13,9 +13,10 @@ class StartScene:
 
         clock = pygame.time.Clock()
         scene_sprites = pygame.sprite.Group()
+        buttons = pygame.sprite.Group()
 
         btn_start = Button(load_image(r"buttons\start_button.png"),
-                           (width // 2, height // 2), self.load_game, scene_sprites)
+                           (width // 2, height // 2), self.load_game, buttons, scene_sprites)
 
         while running:
             clock.tick(FPS)
@@ -23,9 +24,16 @@ class StartScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            screen.fill((0, 0, 0))
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for btn in buttons:
+                        if btn.check_focus():
+                            btn.action()
+
+            screen.fill(pygame.color.Color("darkgreen"))
+
+            scene_sprites.update()
             scene_sprites.draw(screen)
             pygame.display.flip()
 
     def load_game(self):
-        pass
+        print("ahaahahhaah")
