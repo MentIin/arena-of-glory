@@ -22,6 +22,60 @@ class Tile(Creature):
 class Player(Creature):
     def __init__(self, pos, *groups):
         super().__init__(r"hero\hero1.png", pos, *groups, scale=5, is_rigid=False)
+        self.xvel = 0
+        self.yvel = 0
+        self.on_ground = False
+        self.jump_power = 10
+        self.xdir = 0 # лево или право
+        self.speed = 5
+    def move(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            if self.on_ground:  # прыгаем, только когда можем оттолкнуться от земли
+                self.yvel = -self.jump_power
+        if keys[pygame.K_a]:
+            self.xdir = -1
+        elif keys[pygame.K_d]:
+            self.xdir = 1
+        else:
+            self.xdir = 0
+        self.xvel = self.speed * self.xdir
+    def update(self, *args):
+        self.move()
+        self.on_ground = False
+
+        self.rect.x += self.xvel
+        self.collide(self.xvel, 0)
+        self.rect.y += self.yvel
+        self.collide(0, self.yvel)
+
+        if self.yvel < 0 and self.on_ground:
+            self.on_ground = False
+
+        if not self.on_ground:
+            self.yvel += 20 / 60
+    def collide(self, xvel, yvel):
+
+        for p in self.groups()[0]:
+            if not p.is_rigid:
+                continue
+            if pygame.sprite.collide_rect(self, p):  # если есть пересечение платформы с игроком
+
+                if xvel > 0:  # если движется вправо
+                    self.rect.right = p.rect.left  # то не движется вправо
+
+                if xvel < 0:  # если движется влево
+                    self.rect.left = p.rect.right  # то не движется влево
+
+                if yvel > 0:  # если падает вниз
+                    self.rect.bottom = p.rect.top  # то не падает вниз
+                    self.on_ground = True  # и становится на что-то твердое
+                    self.yvel = 0  # и энергия падения пропадает
+
+
+                if yvel < 0:  # если движется вверх
+                    self.rect.top = p.rect.bottom  # то не движется вверх
+                    self.yvel = 0  # и энергия прыжка пропадает
 
 
 def generate_level(level, *groups, tile_size=50):

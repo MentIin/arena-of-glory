@@ -52,7 +52,7 @@ class GameScane:
         scene_sprites = pygame.sprite.Group()
         buttons = pygame.sprite.Group()
 
-        generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
+        player, x, y = generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
 
         while running:
             clock.tick(FPS)
