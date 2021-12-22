@@ -1,7 +1,8 @@
 import pygame
-from additional import load_image
+from additional import load_image, terminate, load_level
 from interface import Button
-from creatures import Player
+from creatures import Player, generate_level
+
 
 class StartScene:
     def __init__(self, screen):
@@ -46,24 +47,26 @@ class GameScane:
         running = True
         FPS = 60
 
-
-
         clock = pygame.time.Clock()
+
         scene_sprites = pygame.sprite.Group()
         buttons = pygame.sprite.Group()
-        player = Player((40, 40), scene_sprites)
+
+        generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
+
         while running:
             clock.tick(FPS)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    terminate()
                 if event.type == pygame.MOUSEBUTTONUP:
                     for btn in buttons:
                         if btn.check_focus():
                             btn.action()
 
-            screen.fill(pygame.color.Color("darkgreen"))
+            screen.fill(pygame.color.Color("black"))
 
             scene_sprites.update()
             scene_sprites.draw(screen)
