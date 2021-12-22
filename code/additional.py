@@ -16,3 +16,7 @@ def load_image(name, colorkey=None):
 def get_scaled_image(image, scale):
     return pygame.transform.scale(image, (image.get_rect().width * scale,
                                           image.get_rect().height * scale))
+
+def terminate():
+    pygame.quit()
+    sys.exit()
