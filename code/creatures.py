@@ -54,6 +54,17 @@ class Player(Creature):
 
         if not self.on_ground:
             self.yvel += 20 / 60
+
+
+        self.set_image()
+
+    def set_image(self):
+        if self.xdir == 1:
+            im = pygame.transform.flip(self.orig_image, True, False)
+        elif self.xdir == -1:
+            im = self.orig_image
+        if self.xdir != 0: # если равен 0 то изображение не меняется
+            self.image = get_scaled_image(im, self.scale)
     def collide(self, xvel, yvel):
 
         for p in self.groups()[0]:
