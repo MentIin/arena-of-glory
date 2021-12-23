@@ -2,7 +2,10 @@ import pygame
 import os
 import sys
 
-def load_image(name, colorkey=None):
+
+FPS = 60
+
+def load_image(name, colorkey=-1):
     fullname = os.path.join("data\images", name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):

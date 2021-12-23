@@ -1,5 +1,5 @@
 import pygame
-from additional import load_image, get_scaled_image
+from additional import load_image, get_scaled_image, FPS
 
 
 class Creature(pygame.sprite.Sprite):
@@ -15,9 +15,11 @@ class Creature(pygame.sprite.Sprite):
         self.rect.topleft = pos
         self.is_rigid = is_rigid
 
+
 class Tile(Creature):
     def __init__(self, pos, *groups, scale=5):
         super().__init__(r"tiles\tile1.png", pos, *groups, scale=scale, is_rigid=True)
+
 
 class Player(Creature):
     def __init__(self, pos, *groups):
@@ -26,8 +28,16 @@ class Player(Creature):
         self.yvel = 0
         self.on_ground = False
         self.jump_power = 10
-        self.xdir = 0 # лево или право
+        self.xdir = 0  # лево или право
         self.speed = 5
+        self.animation = [get_scaled_image(load_image("hero/hero1.png"), self.scale),
+                          get_scaled_image(load_image("hero/hero2.png"), self.scale),
+                          get_scaled_image(load_image("hero/hero3.png"), self.scale),
+                          get_scaled_image(load_image("hero/hero4.png"), self.scale)]
+        self.animation_tick = 0
+        self.animation_speed = 200
+        self.right = True
+
     def move(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
@@ -35,11 +45,14 @@ class Player(Creature):
                 self.yvel = -self.jump_power
         if keys[pygame.K_a]:
             self.xdir = -1
+            self.right = False
         elif keys[pygame.K_d]:
             self.xdir = 1
+            self.right = True
         else:
             self.xdir = 0
         self.xvel = self.speed * self.xdir
+
     def update(self, *args):
         self.move()
         self.on_ground = False
@@ -55,16 +68,18 @@ class Player(Creature):
         if not self.on_ground:
             self.yvel += 20 / 60
 
-
         self.set_image()
 
     def set_image(self):
-        if self.xdir == 1:
-            im = pygame.transform.flip(self.orig_image, True, False)
-        elif self.xdir == -1:
-            im = self.orig_image
-        if self.xdir != 0: # если равен 0 то изображение не меняется
-            self.image = get_scaled_image(im, self.scale)
+        self.animation_tick = (self.animation_tick + self.animation_speed / FPS) % 100
+        self.orig_image = self.animation[int(self.animation_tick // 25)]
+        if self.xdir == 0:
+            self.orig_image = self.animation[0]
+        if self.right:
+           self.image = pygame.transform.flip(self.orig_image, True, False)
+        else:
+            self.image = self.orig_image
+
     def collide(self, xvel, yvel):
 
         for p in self.groups()[0]:
@@ -83,7 +98,6 @@ class Player(Creature):
                     self.on_ground = True  # и становится на что-то твердое
                     self.yvel = 0  # и энергия падения пропадает
 
-
                 if yvel < 0:  # если движется вверх
                     self.rect.top = p.rect.bottom  # то не движется вверх
                     self.yvel = 0  # и энергия прыжка пропадает
@@ -95,11 +109,11 @@ def generate_level(level, *groups, tile_size=50):
         for x in range(len(level[y])):
             if level[y][x] == '.':
                 pass
-                #Tile('empty', x, y)
+                # Tile('empty', x, y)
             elif level[y][x] == '#':
                 Tile((x * tile_size, y * tile_size), *groups)
             elif level[y][x] == '@':
-                #Tile('empty', x, y)
+                # Tile('empty', x, y)
                 new_player = Player((x * tile_size, y * tile_size), *groups)
     # вернем игрока, а также размер поля в клетках
     return new_player, x, y

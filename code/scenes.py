@@ -1,5 +1,5 @@
 import pygame
-from additional import load_image, terminate, load_level
+from additional import load_image, terminate, load_level, FPS
 from interface import Button
 from creatures import Player, generate_level
 
@@ -10,7 +10,6 @@ class StartScene:
         size = width, height = screen.get_size()
 
         running = True
-        FPS = 60
 
         clock = pygame.time.Clock()
         scene_sprites = pygame.sprite.Group()
@@ -45,7 +44,6 @@ class GameScane:
         size = width, height = screen.get_size()
 
         running = True
-        FPS = 60
 
         clock = pygame.time.Clock()
 
@@ -66,7 +64,7 @@ class GameScane:
                         if btn.check_focus():
                             btn.action()
 
-            screen.fill(pygame.color.Color("black"))
+            screen.fill(pygame.color.Color("grey"))
 
             scene_sprites.update()
             scene_sprites.draw(screen)
