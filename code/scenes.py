@@ -1,7 +1,7 @@
 import pygame
 from additional import load_image, terminate, load_level, FPS
 from interface import Button
-from creatures import Player, generate_level
+from creatures import Player, generate_level, Weapon
 
 
 class StartScene:
@@ -51,6 +51,7 @@ class GameScane:
         buttons = pygame.sprite.Group()
 
         player, x, y = generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
+        block = Weapon(player, scene_sprites, scale=3)
 
         while running:
             clock.tick(FPS)
