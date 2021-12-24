@@ -64,7 +64,7 @@ class GameScane:
                         if btn.check_focus():
                             btn.action()
 
-            screen.fill(pygame.color.Color("grey"))
+            screen.fill(pygame.color.Color("lightblue"))
 
             scene_sprites.update()
             scene_sprites.draw(screen)

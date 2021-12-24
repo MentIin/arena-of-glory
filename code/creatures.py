@@ -1,5 +1,5 @@
 import pygame
-from additional import load_image, get_scaled_image, FPS, TILE_SIZE
+from additional import load_image, get_scaled_image, FPS, TILE_SIZE, GRAVITY
 
 
 class Creature(pygame.sprite.Sprite):
@@ -27,7 +27,7 @@ class Player(Creature):
         self.xvel = 0
         self.yvel = 0
         self.on_ground = False
-        self.jump_power = 10
+        self.jump_power = 13
         self.xdir = 0  # лево или право
         self.speed = 5
         self.animation = [get_scaled_image(load_image("hero/hero1.png"), self.scale),
@@ -66,7 +66,7 @@ class Player(Creature):
             self.on_ground = False
 
         if not self.on_ground:
-            self.yvel += 20 / 60
+            self.yvel += GRAVITY / 60
 
         self.set_image()
 
