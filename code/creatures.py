@@ -1,5 +1,5 @@
 import pygame
-from additional import load_image, get_scaled_image, FPS
+from additional import load_image, get_scaled_image, FPS, TILE_SIZE
 
 
 class Creature(pygame.sprite.Sprite):
@@ -103,7 +103,7 @@ class Player(Creature):
                     self.yvel = 0  # и энергия прыжка пропадает
 
 
-def generate_level(level, *groups, tile_size=50):
+def generate_level(level, *groups, tile_size=TILE_SIZE):
     new_player, x, y = None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):

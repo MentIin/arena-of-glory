@@ -4,6 +4,7 @@ import sys
 
 
 FPS = 60
+TILE_SIZE = 50
 
 def load_image(name, colorkey=-1):
     fullname = os.path.join("data\images", name)
