@@ -29,6 +29,7 @@ class StartScene:
                         if btn.check_focus():
                             btn.action()
 
+
             screen.fill(pygame.color.Color("darkgreen"))
 
             scene_sprites.update()
@@ -51,7 +52,7 @@ class GameScane:
         buttons = pygame.sprite.Group()
 
         player, x, y = generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
-        block = Weapon(player, scene_sprites, scale=3)
+        player.weapon = Weapon(player, scene_sprites, scale=3)
 
         while running:
             clock.tick(FPS)
@@ -64,6 +65,9 @@ class GameScane:
                     for btn in buttons:
                         if btn.check_focus():
                             btn.action()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        player.weapon.fire()
 
             screen.fill(pygame.color.Color("lightblue"))
 
