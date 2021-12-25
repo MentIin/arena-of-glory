@@ -35,7 +35,7 @@ class Player(Creature, AnimatedSprite):
         self.weapon = None
 
         self.animation_tick = 0
-        self.animation_speed = 12000
+        self.animation_speed = 15000
         self.right = True
 
     def move(self):
@@ -107,13 +107,16 @@ class Player(Creature, AnimatedSprite):
 
 
 class Weapon(Creature):
-    def __init__(self, owner: Creature, *groups, scale=5, level=1):
+    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=1000, level=1):
         super().__init__(load_image(r"tiles\tile1.png"), owner.pos, *groups, scale=scale, is_rigid=False)
         self.owner = owner
         self.level = level
+        self.reload_speed = reload_speed
+        self.reload_tick = 0
 
     def update(self, *args, **kwargs) -> None:
         self.set_pos()
+        self.reload_tick += self.reload_speed / FPS
 
     def set_pos(self):
         self.pos = self.owner.rect.center
@@ -126,12 +129,17 @@ class Weapon(Creature):
         self.rect.y = self.pos[1]
         self.rect.x = self.pos[0] - self.rect.width // 2
 
+    def activate(self):
+        if self.reload_tick >= 1000:
+            self.reload_tick = 0
+            self.fire()
+
     def fire(self):
         b = Bullet(self, load_image(r"tiles\tile1.png"), *self.groups())
 
 
 class Bullet(Creature):
-    def __init__(self, weapon: Weapon, image,  *groups, speed=10, damage=10, live_time=20, scale=5):
+    def __init__(self, weapon: Weapon, image, *groups, speed=10, damage=10, live_time=20, scale=5):
         if weapon.owner.right:
             pos = weapon.rect.topright
             self.right = True
@@ -147,7 +155,7 @@ class Bullet(Creature):
     def update(self, *args, **kwargs) -> None:
         self.live_time -= 100 / FPS
         if self.live_time <= 0:
-            a = Tile(self.pos, *self.groups(), scale=6)
+            a = Tile(self.pos, *self.groups(), scale=5)
             self.kill()
         if self.right:
             self.rect.x += self.speed

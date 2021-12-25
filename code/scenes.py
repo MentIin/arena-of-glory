@@ -67,7 +67,7 @@ class GameScane:
                             btn.action()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        player.weapon.fire()
+                        player.weapon.activate()
 
             screen.fill(pygame.color.Color("lightblue"))
 
