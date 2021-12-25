@@ -1,11 +1,11 @@
 import pygame
-from additional import load_image, get_scaled_image, FPS, TILE_SIZE, GRAVITY
+from additional import AnimatedSprite, load_image, get_scaled_image, FPS, TILE_SIZE, GRAVITY
 
 
 class Creature(pygame.sprite.Sprite):
     def __init__(self, image, pos, *groups, scale=5, is_rigid=False):
         super().__init__(*groups)
-        self.orig_image = get_scaled_image(load_image(image), scale)
+        self.orig_image = get_scaled_image(image, scale)
 
         self.scale = scale
         self.image = self.orig_image
@@ -18,24 +18,23 @@ class Creature(pygame.sprite.Sprite):
 
 class Tile(Creature):
     def __init__(self, pos, *groups, scale=5):
-        super().__init__(r"tiles\tile1.png", pos, *groups, scale=scale, is_rigid=True)
+        super().__init__(load_image(r"tiles\tile1.png"), pos, *groups, scale=scale, is_rigid=True)
 
 
-class Player(Creature):
+class Player(Creature, AnimatedSprite):
     def __init__(self, pos, *groups):
-        super().__init__(r"hero\hero1.png", pos, *groups, scale=5, is_rigid=False)
+        im = get_scaled_image(load_image(r"hero\hero.png"), 5)
+        self.set_frames(im, 4, 1)
+        super().__init__(self.frames[0], pos, *groups, scale=1, is_rigid=False)
         self.xvel = 0
         self.yvel = 0
         self.on_ground = False
         self.jump_power = 13
         self.xdir = 0  # лево или право
         self.speed = 5
-        self.animation = [get_scaled_image(load_image("hero/hero1.png"), self.scale),
-                          get_scaled_image(load_image("hero/hero2.png"), self.scale),
-                          get_scaled_image(load_image("hero/hero3.png"), self.scale),
-                          get_scaled_image(load_image("hero/hero4.png"), self.scale)]
+
         self.animation_tick = 0
-        self.animation_speed = 200
+        self.animation_speed = 20000
         self.right = True
 
     def move(self):
@@ -73,14 +72,19 @@ class Player(Creature):
         self.pos = (self.rect.x, self.rect.y)
 
     def set_image(self):
-        self.animation_tick = (self.animation_tick + self.animation_speed / FPS) % 100
-        self.orig_image = self.animation[int(self.animation_tick // 25)]
-        if self.xdir == 0:
-            self.orig_image = self.animation[0]
-        if self.right:
-            self.image = pygame.transform.flip(self.orig_image, True, False)
-        else:
-            self.image = self.orig_image
+        self.animation_tick += self.animation_speed / FPS
+        if self.animation_tick > 1000:
+            self.animation_tick = 0
+            self.update_frame()
+        if self.right and self.xdir == 0:
+            self.image = pygame.transform.flip(self.frames[0], True, False)
+        elif self.xdir == 0:
+            self.image = self.frames[0]
+        elif self.right and self.xdir == 1:
+            self.image = pygame.transform.flip(self.frames[self.cur_frame], True, False)
+
+
+
 
     def collide(self, xvel, yvel):
 
@@ -104,12 +108,12 @@ class Player(Creature):
                     self.rect.top = p.rect.bottom  # то не движется вверх
                     self.yvel = 0  # и энергия прыжка пропадает
 
-class Bullet(Creature):
-    def __init__(self, pos, *groups, scale=5):
-        super().__init__(r"tiles\tile1.png", pos, *groups, scale=scale, is_rigid=False)
+
+
+
 class Weapon(Creature):
     def __init__(self, owner: Creature, *groups, scale=5, level=1):
-        super().__init__(r"tiles\tile1.png", owner.pos, *groups, scale=scale, is_rigid=False)
+        super().__init__(load_image(r"tiles\tile1.png"), owner.pos, *groups, scale=scale, is_rigid=False)
         self.owner = owner
         self.level = level
 
@@ -126,9 +130,22 @@ class Weapon(Creature):
             self.image = pygame.transform.flip(self.orig_image, True, False)
         self.rect.y = self.pos[1]
         self.rect.x = self.pos[0] - self.rect.width // 2
+
+
     def fire(self):
         pass
 
+
+class Bullet(Creature):
+    def __init__(self, weapon: Weapon, image: str, speed=10, damage=10, *groups, scale=5):
+        if weapon.owner.right:
+            pos = weapon.rect.topright
+        else:
+            pos = weapon.rect.topleft
+        super().__init__(r"tiles\tile1.png", weapon.pos, *groups, scale=scale, is_rigid=False)
+        self.weapon = weapon
+    def update(self, *args, **kwargs) -> None:
+        pass
 
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):
