@@ -1,7 +1,7 @@
 import pygame
 from additional import load_image, terminate, load_level, FPS
 from interface import Button
-from creatures import Player, generate_level, Weapon
+from creatures import Player, generate_level, Weapon, Gun
 
 
 class StartScene:
@@ -52,7 +52,9 @@ class GameScane:
         buttons = pygame.sprite.Group()
 
         player, x, y = generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
-        player.weapon = Weapon(player, scene_sprites, scale=3)
+        player.weapon = Gun(player, scene_sprites, scale=5)
+
+        space_pressed = False
 
         while running:
             clock.tick(FPS)
@@ -67,7 +69,12 @@ class GameScane:
                             btn.action()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        player.weapon.activate()
+                        space_pressed = True
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_SPACE:
+                        space_pressed = False
+            if space_pressed:
+                player.weapon.activate()
 
             screen.fill(pygame.color.Color("lightblue"))
 

@@ -30,7 +30,7 @@ class Player(Creature, AnimatedSprite):
         self.yvel = 0
         self.on_ground = False
         self.jump_power = 13
-        self.xdir = 0  # лево или право
+        self.xdir = 0  # лево, на месте или право
         self.speed = 5
         self.weapon = None
 
@@ -86,7 +86,7 @@ class Player(Creature, AnimatedSprite):
 
     def collide(self, xvel, yvel):
         for p in self.groups()[0]:
-            if not p.is_rigid:
+            if not p.is_rigid:  # проверяем только "твёрдые" спрайты
                 continue
             if pygame.sprite.collide_rect(self, p):  # если есть пересечение платформы с игроком
 
@@ -107,8 +107,9 @@ class Player(Creature, AnimatedSprite):
 
 
 class Weapon(Creature):
-    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=1000, level=1):
-        super().__init__(load_image(r"tiles\tile1.png"), owner.pos, *groups, scale=scale, is_rigid=False)
+    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=1000, level=1,
+                 image=load_image(r"tiles\tile1.png")):
+        super().__init__(image, owner.pos, *groups, scale=scale, is_rigid=False)
         self.owner = owner
         self.level = level
         self.reload_speed = reload_speed
@@ -138,15 +139,33 @@ class Weapon(Creature):
         b = Bullet(self, load_image(r"tiles\tile1.png"), *self.groups())
 
 
+class Gun(Weapon):
+    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=1000, level=1):
+        super(Gun, self).__init__(owner, *groups, scale=scale, reload_speed=4000, level=1,
+                                  image=load_image(r"weapons\gun.png"))
+
+    def update(self, *args, **kwargs) -> None:
+        super(Gun, self).update(*args, **kwargs)
+        if self.owner.right:
+            self.rect.x += 15
+        else:
+            self.rect.x -= 15
+
+    def fire(self):
+        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=10, live_time=10 ** 3)
+
+
 class Bullet(Creature):
     def __init__(self, weapon: Weapon, image, *groups, speed=10, damage=10, live_time=20, scale=5):
         if weapon.owner.right:
-            pos = weapon.rect.topright
+            self.pos = weapon.rect.topright
             self.right = True
         else:
-            pos = weapon.rect.topleft
+            self.pos = weapon.rect.topleft
             self.right = False
-        super().__init__(image, weapon.pos, *groups, scale=scale, is_rigid=False, right=self.right)
+        super().__init__(image, self.pos, *groups, scale=scale, is_rigid=False, right=self.right)
+        if not self.right:
+            self.pos = (self.pos[0] - self.rect.width, self.pos[1])
         self.weapon = weapon
         self.speed = speed
         self.damage = damage
@@ -154,15 +173,21 @@ class Bullet(Creature):
 
     def update(self, *args, **kwargs) -> None:
         self.live_time -= 100 / FPS
+        self.collide()
         if self.live_time <= 0:
-            a = Tile(self.pos, *self.groups(), scale=5)
             self.kill()
-        if self.right:
-            self.rect.x += self.speed
-        else:
-            self.rect.x -= self.speed
-        self.pos = (self.rect.x, self.rect.y)
 
+        if self.right:
+            self.pos = (self.pos[0] + self.speed, self.pos[1])
+        else:
+            self.pos = (self.pos[0] - self.speed, self.pos[1])
+        self.rect.topleft = self.pos
+    def collide(self):
+        for p in self.groups()[0]:
+            if not p.is_rigid:  # проверяем только "твёрдые" спрайты
+                continue
+            if pygame.sprite.collide_rect(self, p):
+                self.kill()
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):
     new_player, x, y = None, None, None
