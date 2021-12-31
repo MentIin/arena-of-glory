@@ -55,7 +55,9 @@ class LivingCreature(Creature, AnimatedSprite):
 
         if not self.on_ground:
             self.yvel += GRAVITY / 60
-
+        if self.animation_tick > 1000:
+            self.animation_tick = 0
+            self.update_frame()
         self.set_image()
 
         self.pos = (self.rect.x, self.rect.y)
@@ -65,9 +67,6 @@ class LivingCreature(Creature, AnimatedSprite):
 
     def set_image(self):
         self.animation_tick += self.animation_speed / FPS
-        if self.animation_tick > 1000:
-            self.animation_tick = 0
-            self.update_frame()
         if self.right and self.xdir == 0:
             self.image = pygame.transform.flip(self.frames[0], True, False)
         elif self.xdir == 0:
@@ -123,8 +122,8 @@ class Player(LivingCreature):
 
 
 class Enemy(LivingCreature):
-    def __init__(self, pos, *groups):
-        super(Enemy, self).__init__(pos, *groups, image=load_image(r"hero\hero.png"), col=4)
+    def __init__(self, pos, *groups, image=load_image(r"hero\hero.png"), col=4, row=1):
+        super(Enemy, self).__init__(pos, *groups, image=image, col=col, row=row)
         self.jump_chance = 3
 
     def move(self):
@@ -138,6 +137,20 @@ class Enemy(LivingCreature):
             self.xdir = -1
 
         self.xvel = self.speed * self.xdir
+
+
+class Slime(Enemy):
+    def __init__(self, pos, *groups):
+        super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2)
+        self.animation_speed = 6000
+
+    def set_image(self):
+        if self.yvel < 0:
+            self.cur_frame = 0
+        super(Slime, self).set_image()
+
+
+
 
 
 class Weapon(Creature):

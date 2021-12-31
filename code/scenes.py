@@ -1,7 +1,7 @@
 import pygame
 from additional import load_image, terminate, load_level, FPS
 from interface import Button
-from creatures import Player, generate_level, Weapon, Gun, Enemy
+from creatures import Player, generate_level, Weapon, Gun, Enemy, Slime
 
 
 class StartScene:
@@ -53,7 +53,7 @@ class GameScane:
 
         player, x, y = generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
         player.weapon = Gun(player, scene_sprites, scale=5)
-        slime = Enemy((100, 50), scene_sprites)
+        slime = Slime((100, 50), scene_sprites)
 
         space_pressed = False
 
