@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+from random import random
 
 FPS = 60
 TILE_SIZE = 50
@@ -60,3 +61,10 @@ def get_scaled_image(image, scale):
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def roulette(chance):
+    # шанс указывается в процентах
+    if random() * 100 <= chance:
+        return True
+    return False

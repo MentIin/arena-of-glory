@@ -1,5 +1,5 @@
 import pygame
-from additional import AnimatedSprite, load_image, get_scaled_image, FPS, TILE_SIZE, GRAVITY
+from additional import *
 
 
 class Creature(pygame.sprite.Sprite):
@@ -21,10 +21,10 @@ class Tile(Creature):
         super().__init__(load_image(r"tiles\tile1.png"), pos, *groups, scale=scale, is_rigid=True)
 
 
-class Player(Creature, AnimatedSprite):
-    def __init__(self, pos, *groups):
-        im = get_scaled_image(load_image(r"hero\hero.png"), 5)
-        self.set_frames(im, 4, 1)
+class LivingCreature(Creature, AnimatedSprite):
+    def __init__(self, pos, *groups, image=load_image(r"tiles\tile1.png"), health=100, col=1, row=1):
+        im = get_scaled_image(image, 5)
+        self.set_frames(im, col, row)
         super().__init__(self.frames[0], pos, *groups, scale=1, is_rigid=False)
         self.xvel = 0
         self.yvel = 0
@@ -38,20 +38,8 @@ class Player(Creature, AnimatedSprite):
         self.animation_speed = 15000
         self.right = True
 
-    def move(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            if self.on_ground:  # прыгаем, только когда можем оттолкнуться от земли
-                self.yvel = -self.jump_power
-        if keys[pygame.K_a]:
-            self.xdir = -1
-            self.right = False
-        elif keys[pygame.K_d]:
-            self.xdir = 1
-            self.right = True
-        else:
-            self.xdir = 0
-        self.xvel = self.speed * self.xdir
+        self.health = health
+        self.max_health = health
 
     def update(self, *args, **kwargs):
         self.move()
@@ -71,6 +59,9 @@ class Player(Creature, AnimatedSprite):
         self.set_image()
 
         self.pos = (self.rect.x, self.rect.y)
+
+    def move(self):
+        pass
 
     def set_image(self):
         self.animation_tick += self.animation_speed / FPS
@@ -92,9 +83,11 @@ class Player(Creature, AnimatedSprite):
 
                 if xvel > 0:  # если движется вправо
                     self.rect.right = p.rect.left  # то не движется вправо
+                    self.xvel = 0
 
                 if xvel < 0:  # если движется влево
                     self.rect.left = p.rect.right  # то не движется влево
+                    self.xvel = 0
 
                 if yvel > 0:  # если падает вниз
                     self.rect.bottom = p.rect.top  # то не падает вниз
@@ -104,6 +97,47 @@ class Player(Creature, AnimatedSprite):
                 if yvel < 0:  # если движется вверх
                     self.rect.top = p.rect.bottom  # то не движется вверх
                     self.yvel = 0  # и энергия прыжка пропадает
+
+    def jump(self):
+        if self.on_ground:  # прыгаем, только когда можем оттолкнуться от земли
+            self.yvel = -self.jump_power
+
+
+class Player(LivingCreature):
+    def __init__(self, pos, *groups):
+        super(Player, self).__init__(pos, *groups, image=load_image(r"hero\hero.png"), col=4)
+
+    def move(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            self.jump()
+        if keys[pygame.K_a]:
+            self.xdir = -1
+            self.right = False
+        elif keys[pygame.K_d]:
+            self.xdir = 1
+            self.right = True
+        else:
+            self.xdir = 0
+        self.xvel = self.speed * self.xdir
+
+
+class Enemy(LivingCreature):
+    def __init__(self, pos, *groups):
+        super(Enemy, self).__init__(pos, *groups, image=load_image(r"hero\hero.png"), col=4)
+        self.jump_chance = 3
+
+    def move(self):
+        if roulette(self.jump_chance):
+            self.jump()
+        if self.xvel == 0:
+            self.right = not self.right
+        if self.right:
+            self.xdir = 1
+        else:
+            self.xdir = -1
+
+        self.xvel = self.speed * self.xdir
 
 
 class Weapon(Creature):
@@ -152,7 +186,7 @@ class Gun(Weapon):
             self.rect.x -= 15
 
     def fire(self):
-        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=10, live_time=10 ** 3)
+        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2)
 
 
 class Bullet(Creature):
@@ -173,21 +207,24 @@ class Bullet(Creature):
 
     def update(self, *args, **kwargs) -> None:
         self.live_time -= 100 / FPS
-        self.collide()
+
         if self.live_time <= 0:
             self.kill()
-
+            return
         if self.right:
             self.pos = (self.pos[0] + self.speed, self.pos[1])
         else:
             self.pos = (self.pos[0] - self.speed, self.pos[1])
         self.rect.topleft = self.pos
+        self.collide()
+
     def collide(self):
         for p in self.groups()[0]:
             if not p.is_rigid:  # проверяем только "твёрдые" спрайты
                 continue
             if pygame.sprite.collide_rect(self, p):
                 self.kill()
+
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):
     new_player, x, y = None, None, None
