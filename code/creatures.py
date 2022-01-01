@@ -101,6 +101,11 @@ class LivingCreature(Creature, AnimatedSprite):
         if self.on_ground:  # прыгаем, только когда можем оттолкнуться от земли
             self.yvel = -self.jump_power
 
+    def get_damage(self, dm):
+        self.health -= dm
+        if self.health <= 0:
+            self.kill()
+
 
 class Player(LivingCreature):
     def __init__(self, pos, *groups):
@@ -119,6 +124,7 @@ class Player(LivingCreature):
         else:
             self.xdir = 0
         self.xvel = self.speed * self.xdir
+
     def use_weapon(self):
         if self.weapon is not None:
             self.weapon.activate()
@@ -151,9 +157,6 @@ class Slime(Enemy):
         if self.yvel < 0:
             self.cur_frame = 0
         super(Slime, self).set_image()
-
-
-
 
 
 class Weapon(Creature):
@@ -190,8 +193,8 @@ class Weapon(Creature):
 
 
 class Gun(Weapon):
-    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=1000, level=1):
-        super(Gun, self).__init__(owner, *groups, scale=scale, reload_speed=4000, level=1,
+    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=5000, level=1):
+        super(Gun, self).__init__(owner, *groups, scale=scale, reload_speed=reload_speed, level=1,
                                   image=load_image(r"weapons\gun.png"))
 
     def update(self, *args, **kwargs) -> None:
@@ -202,7 +205,7 @@ class Gun(Weapon):
             self.rect.x -= 15
 
     def fire(self):
-        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2)
+        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2, damage=20)
 
 
 class Bullet(Creature):
@@ -236,10 +239,12 @@ class Bullet(Creature):
 
     def collide(self):
         for p in self.groups()[0]:
-            if not p.is_rigid:  # проверяем только "твёрдые" спрайты
-                continue
             if pygame.sprite.collide_rect(self, p):
-                self.kill()
+                if isinstance(p, LivingCreature):
+                    p.get_damage(self.damage)
+                    self.kill()
+                elif p.is_rigid:  # проверяем только "твёрдые" спрайты
+                    self.kill()
 
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):
