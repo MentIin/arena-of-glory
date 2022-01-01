@@ -21,7 +21,7 @@ class Effect:
 
 
 class Knockback(Effect):
-    def __init__(self, dealer, owner, duration=0.3, power=5):
+    def __init__(self, dealer, owner, duration=0.4, power=8):
         super(Knockback, self).__init__("knockback", duration, dealer, owner)
         self.power = power
 

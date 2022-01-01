@@ -105,30 +105,31 @@ class LivingCreature(Creature, AnimatedSprite):
             self.effects.append(effect)
 
     def collide(self, xvel, yvel):
-        for p in self.groups()[0]:
-            if id(p) == id(self):
-                continue
-            if pygame.sprite.collide_rect(self, p):  # если есть пересечение платформы с игроком
-                if isinstance(p, LivingCreature):
-                    self.collide_action(p)
-                if not p.rigid:  # проверяем только "твёрдые" спрайты
+        for g in self.groups():
+            for p in g:
+                if id(p) == id(self):
                     continue
-                if xvel > 0:  # если движется вправо
-                    self.rect.right = p.rect.left  # то не движется вправо
-                    self.xvel = 0
+                if pygame.sprite.collide_rect(self, p):  # если есть пересечение платформы с игроком
+                    if isinstance(p, LivingCreature):
+                        self.collide_action(p)
+                    if not p.rigid:  # проверяем только "твёрдые" спрайты
+                        continue
+                    if xvel > 0:  # если движется вправо
+                        self.rect.right = p.rect.left  # то не движется вправо
+                        self.xvel = 0
 
-                if xvel < 0:  # если движется влево
-                    self.rect.left = p.rect.right  # то не движется влево
-                    self.xvel = 0
+                    if xvel < 0:  # если движется влево
+                        self.rect.left = p.rect.right  # то не движется влево
+                        self.xvel = 0
 
-                if yvel > 0:  # если падает вниз
-                    self.rect.bottom = p.rect.top  # то не падает вниз
-                    self.on_ground = True  # и становится на что-то твердое
-                    self.yvel = 0  # и энергия падения пропадает
+                    if yvel > 0:  # если падает вниз
+                        self.rect.bottom = p.rect.top  # то не падает вниз
+                        self.on_ground = True  # и становится на что-то твердое
+                        self.yvel = 0  # и энергия падения пропадает
 
-                if yvel < 0:  # если движется вверх
-                    self.rect.top = p.rect.bottom  # то не движется вверх
-                    self.yvel = 0  # и энергия прыжка пропадает
+                    if yvel < 0:  # если движется вверх
+                        self.rect.top = p.rect.bottom  # то не движется вверх
+                        self.yvel = 0  # и энергия прыжка пропадает
 
     def jump(self):
         if self.on_ground:  # прыгаем, только когда можем оттолкнуться от земли
@@ -177,6 +178,7 @@ class Player(LivingCreature):
         super(Player, self).die()
         pygame.time.set_timer(GAME_OVER, 1000, 1)
 
+
 class Enemy(LivingCreature):
     def __init__(self, pos, *groups, image=load_image(r"hero\hero.png"), col=4, row=1):
         super(Enemy, self).__init__(pos, *groups, image=image, col=col, row=row)
@@ -199,7 +201,8 @@ class Slime(Enemy):
     def __init__(self, pos, *groups):
         super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2)
         self.animation_speed = 6000
-        self.power = 50
+        self.power = 25
+        self.invulnerable_time = 1
 
     def set_image(self):
         if self.yvel < 0:
@@ -207,8 +210,11 @@ class Slime(Enemy):
         super(Slime, self).set_image()
 
     def collide_action(self, target):
-        target.get_effect(Knockback(self, target))
-        target.get_damage(self.power)
+        if isinstance(target, Player):
+            target.get_effect(Knockback(self, target))
+            target.get_damage(self.power)
+        elif isinstance(target, Slime):
+            target.get_effect(Knockback(self, target))
 
 
 class Weapon(Creature):
