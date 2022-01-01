@@ -14,23 +14,26 @@ class Effect:
         self.duration = duration
         self.owner = owner
         self.dealer = dealer
+        self.start_duration = duration
 
     def update(self):
-        self.duration -= 1 // FPS
+        self.duration -= 1 / FPS
 
 
 class Knockback(Effect):
-    def __init__(self, dealer, owner, duration=2, power=10):
+    def __init__(self, dealer, owner, duration=0.3, power=5):
         super(Knockback, self).__init__("knockback", duration, dealer, owner)
         self.power = power
-        self.owner.yvel -= power
+
 
     def update(self):
+        if self.duration == self.start_duration:
+            self.owner.effects_force = (self.owner.effects_force[0], self.owner.effects_force[1] - self.power)
         super(Knockback, self).update()
-        if self.dealer.right:
-            self.owner.xvel += self.power
+        if self.owner.rect.x - self.dealer.rect.x >= 0:
+            self.owner.effects_force = (self.owner.effects_force[0] + self.power, self.owner.effects_force[1])
         else:
-            self.owner.xvel += -self.power
+            self.owner.effects_force = (self.owner.effects_force[0] - self.power, self.owner.effects_force[1])
 
 
 class AnimatedSprite(pygame.sprite.Sprite):

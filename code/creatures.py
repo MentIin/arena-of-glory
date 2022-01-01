@@ -12,7 +12,7 @@ class Creature(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = pos
         self.rect.topleft = pos
-        self.is_rigid = is_rigid
+        self.rigid = is_rigid
         self.right = right
 
 
@@ -35,16 +35,24 @@ class LivingCreature(Creature, AnimatedSprite):
         self.weapon = None
 
         self.animation_tick = 0
-        self.animation_speed = 15000
+        self.animation_speed = 15001
         self.right = True
 
         self.health = health
         self.max_health = health
+
         self.effects = []
+        self.effects_force = (0, 0)
+        self.invulnerable = 0
+        self.invulnerable_time = 3
 
     def update(self, *args, **kwargs):
         self.move()
+        self.update_effects()
         self.on_ground = False
+
+        self.xvel += self.effects_force[0]
+        self.yvel += self.effects_force[1]
 
         self.rect.x += self.xvel
         self.collide(self.xvel, 0)
@@ -59,8 +67,6 @@ class LivingCreature(Creature, AnimatedSprite):
         if self.animation_tick > 1000:
             self.animation_tick = 0
             self.update_frame()
-
-        self.update_effects()
         self.set_image()
 
         self.pos = (self.rect.x, self.rect.y)
@@ -69,12 +75,20 @@ class LivingCreature(Creature, AnimatedSprite):
         pass
 
     def update_effects(self):
+        if self.is_invulnerable():
+            self.invulnerable -= 1 / FPS
+        self.effects_force = (0, 0)
         for effect in self.effects:
             effect.update()
             if effect.duration <= 0:
                 self.effects.remove(effect)
 
     def set_image(self):
+        if self.is_invulnerable():
+            if self.invulnerable * 10 % 3 <= 1:
+                self.image = pygame.Surface((self.rect.w, self.rect.h))
+                self.image.set_alpha(0)
+                return
         self.animation_tick += self.animation_speed / FPS
         if self.right and self.xdir == 0:
             self.image = pygame.transform.flip(self.frames[0], True, False)
@@ -83,12 +97,22 @@ class LivingCreature(Creature, AnimatedSprite):
         elif self.right and self.xdir == 1:
             self.image = pygame.transform.flip(self.frames[self.cur_frame], True, False)
 
+    def collide_action(self, target):
+        pass
+
+    def get_effect(self, effect):
+        if not self.is_invulnerable():
+            self.effects.append(effect)
+
     def collide(self, xvel, yvel):
         for p in self.groups()[0]:
-            if not p.is_rigid:  # проверяем только "твёрдые" спрайты
+            if id(p) == id(self):
                 continue
             if pygame.sprite.collide_rect(self, p):  # если есть пересечение платформы с игроком
-
+                if isinstance(p, LivingCreature):
+                    self.collide_action(p)
+                if not p.rigid:  # проверяем только "твёрдые" спрайты
+                    continue
                 if xvel > 0:  # если движется вправо
                     self.rect.right = p.rect.left  # то не движется вправо
                     self.xvel = 0
@@ -110,10 +134,25 @@ class LivingCreature(Creature, AnimatedSprite):
         if self.on_ground:  # прыгаем, только когда можем оттолкнуться от земли
             self.yvel = -self.jump_power
 
+    def is_invulnerable(self):
+        return self.invulnerable > 0
+
     def get_damage(self, dm):
+        if self.is_invulnerable():
+            return
+        self.invulnerable = self.invulnerable_time
         self.health -= dm
         if self.health <= 0:
-            self.kill()
+            self.die()
+
+    def die(self):
+        if self.weapon is not None:
+            self.weapon.kill()
+        self.kill()
+
+    def use_weapon(self):
+        if self.weapon is not None:
+            self.weapon.activate()
 
 
 class Player(LivingCreature):
@@ -133,10 +172,6 @@ class Player(LivingCreature):
         else:
             self.xdir = 0
         self.xvel = self.speed * self.xdir
-
-    def use_weapon(self):
-        if self.weapon is not None:
-            self.weapon.activate()
 
 
 class Enemy(LivingCreature):
@@ -161,11 +196,16 @@ class Slime(Enemy):
     def __init__(self, pos, *groups):
         super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2)
         self.animation_speed = 6000
+        self.power = 20
 
     def set_image(self):
         if self.yvel < 0:
             self.cur_frame = 0
         super(Slime, self).set_image()
+
+    def collide_action(self, target):
+        target.get_effect(Knockback(self, target))
+        target.get_damage(self.power)
 
 
 class Weapon(Creature):
@@ -252,7 +292,7 @@ class Bullet(Creature):
                 if isinstance(p, LivingCreature):
                     p.get_damage(self.damage)
                     self.kill()
-                elif p.is_rigid:  # проверяем только "твёрдые" спрайты
+                elif p.rigid:  # проверяем только "твёрдые" спрайты
                     self.kill()
 
 

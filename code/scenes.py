@@ -53,7 +53,7 @@ class GameScane:
 
         player, x, y = generate_level(load_level("simple_arena.map"), creatures, tile_size=80)
         player.weapon = Gun(player, creatures, scale=5)
-        slime = Slime((100, 50), creatures)
+        slime = Slime((100, 100), creatures)
 
         space_pressed = False
 
