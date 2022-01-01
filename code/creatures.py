@@ -44,7 +44,7 @@ class LivingCreature(Creature, AnimatedSprite):
         self.effects = []
         self.effects_force = (0, 0)
         self.invulnerable = 0
-        self.invulnerable_time = 3
+        self.invulnerable_time = 2
 
     def update(self, *args, **kwargs):
         self.move()
@@ -85,7 +85,7 @@ class LivingCreature(Creature, AnimatedSprite):
 
     def set_image(self):
         if self.is_invulnerable():
-            if self.invulnerable * 10 % 3 <= 1:
+            if self.invulnerable * 20 % 4 <= 1:
                 self.image = pygame.Surface((self.rect.w, self.rect.h))
                 self.image.set_alpha(0)
                 return
@@ -173,6 +173,9 @@ class Player(LivingCreature):
             self.xdir = 0
         self.xvel = self.speed * self.xdir
 
+    def die(self):
+        super(Player, self).die()
+        pygame.time.set_timer(GAME_OVER, 1000, 1)
 
 class Enemy(LivingCreature):
     def __init__(self, pos, *groups, image=load_image(r"hero\hero.png"), col=4, row=1):
@@ -196,7 +199,7 @@ class Slime(Enemy):
     def __init__(self, pos, *groups):
         super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2)
         self.animation_speed = 6000
-        self.power = 20
+        self.power = 50
 
     def set_image(self):
         if self.yvel < 0:

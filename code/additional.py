@@ -6,7 +6,7 @@ from random import random
 FPS = 60
 TILE_SIZE = 50
 GRAVITY = 25
-
+GAME_OVER = pygame.USEREVENT + 1
 
 class Effect:
     def __init__(self, name, duration, dealer, owner):

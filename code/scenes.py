@@ -1,5 +1,5 @@
 import pygame
-from additional import load_image, terminate, load_level, FPS
+from additional import *
 from interface import Button
 from creatures import Player, generate_level, Weapon, Gun, Enemy, Slime
 
@@ -28,6 +28,7 @@ class StartScene:
                     for btn in buttons:
                         if btn.check_focus():
                             btn.action()
+
 
             screen.fill(pygame.color.Color("darkgreen"))
 
@@ -74,6 +75,8 @@ class GameScane:
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_SPACE:
                         space_pressed = False
+                if event.type == GAME_OVER:
+                    running = False
             if space_pressed:
                 player.use_weapon()
 
