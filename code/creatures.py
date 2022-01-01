@@ -59,6 +59,8 @@ class LivingCreature(Creature, AnimatedSprite):
         if self.animation_tick > 1000:
             self.animation_tick = 0
             self.update_frame()
+
+        self.update_effects()
         self.set_image()
 
         self.pos = (self.rect.x, self.rect.y)
@@ -68,11 +70,6 @@ class LivingCreature(Creature, AnimatedSprite):
 
     def update_effects(self):
         for effect in self.effects:
-            if isinstance(effect, Knockback):
-                if self.right:
-                    self.xvel = -self.speed
-                else:
-                    self.xvel = self.speed
             effect.update()
             if effect.duration <= 0:
                 self.effects.remove(effect)
