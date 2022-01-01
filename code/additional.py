@@ -8,6 +8,23 @@ TILE_SIZE = 50
 GRAVITY = 25
 
 
+class Effect():
+    def __init__(self, name, duration, dealer, owner):
+        self.name = name
+        self.duration = duration
+        self.owner = owner
+        self.dealer = dealer
+
+    def update(self):
+        self.duration -= 1 // FPS
+
+
+
+class Knockback(Effect):
+    def __init__(self, dealer, owner, duration=2):
+        super(Knockback, self).__init__("knockback", duration, dealer, owner)
+
+
 class AnimatedSprite(pygame.sprite.Sprite):
     def set_frames(self, sheet, columns, rows):
         self.frames = []

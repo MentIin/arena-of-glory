@@ -40,6 +40,7 @@ class LivingCreature(Creature, AnimatedSprite):
 
         self.health = health
         self.max_health = health
+        self.effects = []
 
     def update(self, *args, **kwargs):
         self.move()
@@ -64,6 +65,17 @@ class LivingCreature(Creature, AnimatedSprite):
 
     def move(self):
         pass
+
+    def update_effects(self):
+        for effect in self.effects:
+            if isinstance(effect, Knockback):
+                if self.right:
+                    self.xvel = -self.speed
+                else:
+                    self.xvel = self.speed
+            effect.update()
+            if effect.duration <= 0:
+                self.effects.remove(effect)
 
     def set_image(self):
         self.animation_tick += self.animation_speed / FPS
