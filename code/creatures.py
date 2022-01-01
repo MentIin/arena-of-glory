@@ -119,6 +119,9 @@ class Player(LivingCreature):
         else:
             self.xdir = 0
         self.xvel = self.speed * self.xdir
+    def use_weapon(self):
+        if self.weapon is not None:
+            self.weapon.activate()
 
 
 class Enemy(LivingCreature):

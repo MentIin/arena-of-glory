@@ -29,7 +29,6 @@ class StartScene:
                         if btn.check_focus():
                             btn.action()
 
-
             screen.fill(pygame.color.Color("darkgreen"))
 
             scene_sprites.update()
@@ -38,6 +37,7 @@ class StartScene:
 
     def load_game(self) -> None:
         GameScane(self.screen)
+
 
 class GameScane:
     def __init__(self, screen):
@@ -48,12 +48,12 @@ class GameScane:
 
         clock = pygame.time.Clock()
 
-        scene_sprites = pygame.sprite.Group()
+        creatures = pygame.sprite.Group()
         buttons = pygame.sprite.Group()
 
-        player, x, y = generate_level(load_level("simple_arena.map"), scene_sprites, tile_size=80)
-        player.weapon = Gun(player, scene_sprites, scale=5)
-        slime = Slime((100, 50), scene_sprites)
+        player, x, y = generate_level(load_level("simple_arena.map"), creatures, tile_size=80)
+        player.weapon = Gun(player, creatures, scale=5)
+        slime = Slime((100, 50), creatures)
 
         space_pressed = False
 
@@ -75,10 +75,10 @@ class GameScane:
                     if event.key == pygame.K_SPACE:
                         space_pressed = False
             if space_pressed:
-                player.weapon.activate()
+                player.use_weapon()
 
             screen.fill(pygame.color.Color("lightblue"))
 
-            scene_sprites.update()
-            scene_sprites.draw(screen)
+            creatures.update()
+            creatures.draw(screen)
             pygame.display.flip()
