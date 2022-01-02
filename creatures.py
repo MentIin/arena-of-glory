@@ -71,6 +71,8 @@ class LivingCreature(Creature, AnimatedSprite):
 
         self.pos = (self.rect.x, self.rect.y)
 
+        self.draw_health_bar(args[0])
+
     def move(self):
         pass
 
@@ -162,6 +164,22 @@ class LivingCreature(Creature, AnimatedSprite):
         if self.weapon is not None:
             self.weapon.activate()
 
+    def draw_health_bar(self, screen):
+        a = (self.health / self.max_health - 0.5) * 255
+
+        if a > 0:
+            r = 255 - a
+            g = 255
+        else:
+            r = 255
+            g = 255 + a * 2
+        if r > 255:
+            r = 255
+        pygame.draw.rect(screen, pygame.color.Color(int(r), int(g), 0), (self.rect.x, self.rect.y - 12,
+                                                                         self.rect.width * self.health // self.max_health,
+                                                                         10))
+        pygame.draw.rect(screen, "black", (self.rect.x, self.rect.y - 12, self.rect.width, 10), width=2)
+
 
 class Player(LivingCreature):
     def __init__(self, pos, *groups):
@@ -191,7 +209,6 @@ class Player(LivingCreature):
             s.set_volume(0.5)
             s.play(loops=0)
         super().get_damage(dm)
-
 
 
 class Enemy(LivingCreature):
@@ -267,6 +284,7 @@ class Weapon(Creature):
     def fire(self):
         self.play_fire_sound()
         b = Bullet(self, load_image(r"tiles\tile1.png"), *self.groups(), damage=self.power)
+
     def play_fire_sound(self):
         if self.fire_sound is not None:
             if self.fire_sound_duration is not None:
@@ -283,7 +301,6 @@ class Gun(Weapon):
                                   image=load_image(r"weapons\gun.png"))
         self.fire_sound = r"data\sounds\gun_with_silencer.mp3"
         self.fire_sound_duration = 400
-
 
     def update(self, *args, **kwargs) -> None:
         super(Gun, self).update(*args, **kwargs)
