@@ -186,9 +186,12 @@ class Player(LivingCreature):
         pygame.time.set_timer(GAME_OVER, 1000, 1)
 
     def get_damage(self, dm):
+        if not self.is_invulnerable():
+            s = pygame.mixer.Sound(r"data\sounds\get_damage_8bit.mp3")
+            s.set_volume(0.5)
+            s.play(loops=0)
         super().get_damage(dm)
-        s = pygame.mixer.Sound(r"data\sounds\get_damage_8bit.mp3")
-        s.play(loops=0)
+
 
 
 class Enemy(LivingCreature):
