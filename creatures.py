@@ -105,6 +105,13 @@ class LivingCreature(Creature, AnimatedSprite):
             self.effects.append(effect)
 
     def collide(self, xvel, yvel):
+        if self.rect.x + self.rect.width // 2 < 0:
+            self.rect.x = -self.rect.width // 2
+            self.xvel = 0
+        elif self.rect.x + self.rect.width // 2 > WIDTH:
+            self.rect.x = WIDTH - self.rect.width // 2 - 1
+            self.xvel = 0
+
         for g in self.groups():
             for p in g:
                 if id(p) == id(self):
@@ -225,6 +232,7 @@ class Weapon(Creature):
         self.level = level
         self.reload_speed = reload_speed
         self.reload_tick = 0
+        self.power = 20
 
     def update(self, *args, **kwargs) -> None:
         self.set_pos()
@@ -247,7 +255,7 @@ class Weapon(Creature):
             self.fire()
 
     def fire(self):
-        b = Bullet(self, load_image(r"tiles\tile1.png"), *self.groups())
+        b = Bullet(self, load_image(r"tiles\tile1.png"), *self.groups(), damage=self.power)
 
 
 class Gun(Weapon):
@@ -263,7 +271,7 @@ class Gun(Weapon):
             self.rect.x -= 15
 
     def fire(self):
-        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2, damage=20)
+        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2, damage=self.power + self.level)
 
 
 class Bullet(Creature):
