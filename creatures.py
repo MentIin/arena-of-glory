@@ -1,5 +1,6 @@
 import pygame
 from additional import *
+from random import choice, randint
 
 
 class Creature(pygame.sprite.Sprite):
@@ -234,7 +235,7 @@ class Slime(Enemy):
         super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2)
         self.animation_speed = 6000
         self.power = 25
-        self.invulnerable_time = 1
+        self.invulnerable_time = 0
 
     def set_image(self):
         if self.yvel < 0:
@@ -352,6 +353,28 @@ class Bullet(Creature):
                     self.kill()
                 elif p.rigid:  # проверяем только "твёрдые" спрайты
                     self.kill()
+
+
+class EnemySpawner:
+    # mobs = [(Slime, 30(chance)), (Zombie, 10)]
+    def __init__(self, spawn_points: list, group: pygame.sprite.Group, mobs):
+        self.spawn_points = spawn_points
+        self.group = group
+        self.enemies = []
+        self.mobs = mobs
+        for i in range(1, len(mobs)):
+            self.mobs[i] = (self.mobs[i][0], self.mobs[i][1] + self.mobs[i - 1][1])
+        self.sum_chance = sum([i[1] for i in self.mobs])
+
+    def spawn_mob(self):
+        n = randint(0, self.sum_chance)
+        for i in self.mobs:
+            if i[1] >= n:
+                mob = i[0]
+        spawn_point = choice(self.spawn_points)
+        sprite = mob(spawn_point, self.group)
+
+
 
 
 
