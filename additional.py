@@ -3,6 +3,7 @@ import os
 import sys
 from random import random
 
+WIDTH, HEIGHT = 1200, 800
 FPS = 60
 TILE_SIZE = 50
 GRAVITY = 25
