@@ -185,6 +185,11 @@ class Player(LivingCreature):
         super(Player, self).die()
         pygame.time.set_timer(GAME_OVER, 1000, 1)
 
+    def get_damage(self, dm):
+        super().get_damage(dm)
+        s = pygame.mixer.Sound(r"data\sounds\get_damage_8bit.mp3")
+        s.play(loops=0)
+
 
 class Enemy(LivingCreature):
     def __init__(self, pos, *groups, image=load_image(r"hero\hero.png"), col=4, row=1):
@@ -271,7 +276,8 @@ class Gun(Weapon):
             self.rect.x -= 15
 
     def fire(self):
-        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2, damage=self.power + self.level)
+        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2,
+                   damage=self.power + self.level)
 
 
 class Bullet(Creature):
