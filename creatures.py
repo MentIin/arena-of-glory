@@ -86,8 +86,8 @@ class LivingCreature(Creature, AnimatedSprite):
     def set_image(self):
         if self.is_invulnerable():
             if self.invulnerable * 20 % 4 <= 1:
-                self.image = pygame.Surface((self.rect.w, self.rect.h))
-                self.image.set_alpha(0)
+                self.image = self.image.copy()
+                self.image.set_alpha(30)
                 return
         self.animation_tick += self.animation_speed / FPS
         if self.right and self.xdir == 0:
@@ -238,6 +238,8 @@ class Weapon(Creature):
         self.reload_speed = reload_speed
         self.reload_tick = 0
         self.power = 20
+        self.fire_sound = None
+        self.fire_sound_duration = None
 
     def update(self, *args, **kwargs) -> None:
         self.set_pos()
@@ -260,13 +262,25 @@ class Weapon(Creature):
             self.fire()
 
     def fire(self):
+        self.play_fire_sound()
         b = Bullet(self, load_image(r"tiles\tile1.png"), *self.groups(), damage=self.power)
+    def play_fire_sound(self):
+        if self.fire_sound is not None:
+            if self.fire_sound_duration is not None:
+                s = pygame.mixer.Sound(self.fire_sound)
+                s.play(loops=0, maxtime=self.fire_sound_duration)
+            else:
+                s = pygame.mixer.Sound(self.fire_sound)
+                s.play(loops=0)
 
 
 class Gun(Weapon):
     def __init__(self, owner: Creature, *groups, scale=5, reload_speed=5000, level=1):
         super(Gun, self).__init__(owner, *groups, scale=scale, reload_speed=reload_speed, level=1,
                                   image=load_image(r"weapons\gun.png"))
+        self.fire_sound = r"data\sounds\gun_with_silencer.mp3"
+        self.fire_sound_duration = 400
+
 
     def update(self, *args, **kwargs) -> None:
         super(Gun, self).update(*args, **kwargs)
@@ -276,6 +290,7 @@ class Gun(Weapon):
             self.rect.x -= 15
 
     def fire(self):
+        self.play_fire_sound()
         b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2,
                    damage=self.power + self.level)
 
