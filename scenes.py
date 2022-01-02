@@ -52,7 +52,7 @@ class GameScane:
         creatures = pygame.sprite.Group()
         buttons = pygame.sprite.Group()
 
-        player, x, y = generate_level(load_level("simple_arena.map"), creatures, tile_size=80)
+        player, x, y, spawn_points = generate_level(load_level("simple_arena.map"), creatures, tile_size=80)
         player.weapon = Gun(player, creatures, scale=5)
         slime = Slime((100, 100), creatures)
 

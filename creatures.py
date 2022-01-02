@@ -354,17 +354,20 @@ class Bullet(Creature):
                     self.kill()
 
 
+
 def generate_level(level, *groups, tile_size=TILE_SIZE):
     new_player, x, y = None, None, None
+    spawn_points = []
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
                 pass
-                # Tile('empty', x, y)
             elif level[y][x] == '#':
                 Tile((x * tile_size, y * tile_size), *groups)
             elif level[y][x] == '@':
-                # Tile('empty', x, y)
                 new_player = Player((x * tile_size, y * tile_size), *groups)
+            elif level[y][x] == 's':
+                spawn_points.append((x * tile_size, y * tile_size))
+
     # вернем игрока, а также размер поля в клетках
-    return new_player, x, y
+    return new_player, x, y, spawn_points
