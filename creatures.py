@@ -24,30 +24,15 @@ class Tile(Creature):
         super().__init__(load_image(r"tiles\tile1.png"), pos, *groups, scale=scale, is_rigid=True)
 
 
-class LivingCreature(Creature, AnimatedSprite):
-    def __init__(self, pos, *groups, image=load_image(r"tiles\tile1.png"), health=100, col=1, row=1, scale=BASE_SCALE):
-        im = get_scaled_image(image, scale)
-        self.set_frames(im, col, row)
-        super().__init__(self.frames[0], pos, *groups, scale=1, is_rigid=False)
+class MovingCreature(Creature):
+    def __init__(self, image, pos, *groups, scale=BASE_SCALE, is_rigid=False, right=True):
+        super(MovingCreature, self).__init__(image, pos, *groups, scale=scale, is_rigid=is_rigid, right=right)
         self.xvel = 0
         self.yvel = 0
         self.on_ground = False
-        self.jump_power = 13
         self.xdir = 0  # лево, на месте или право
-        self.speed = 5
-        self.weapon = None
-
-        self.animation_tick = 0
-        self.animation_speed = 15001
-        self.right = True
-
-        self.health = health
-        self.max_health = health
-
         self.effects = []
         self.effects_force = (0, 0)
-        self.invulnerable = 0
-        self.invulnerable_time = 2
 
     def update(self, *args, **kwargs):
         self.move()
@@ -62,49 +47,16 @@ class LivingCreature(Creature, AnimatedSprite):
         self.rect.y += self.yvel
         self.collide(0, self.yvel)
 
-        if not self.on_ground:
-            self.yvel += GRAVITY / 60
-        if self.animation_tick > 1000:
-            self.animation_tick = 0
-            self.update_frame()
-        self.set_image()
-
-        self.pos = (self.rect.x, self.rect.y)
-
-        self.draw_health_bar(args[0])
-
     def move(self):
         pass
 
     def update_effects(self):
-        if self.is_invulnerable():
-            self.invulnerable -= 1 / FPS
+
         self.effects_force = (0, 0)
         for effect in self.effects:
             effect.update()
             if effect.duration <= 0:
                 self.effects.remove(effect)
-
-    def set_image(self):
-        if self.is_invulnerable():
-            if self.invulnerable * 20 % 4 <= 1:
-                self.image = self.image.copy()
-                self.image.set_alpha(30)
-                return
-        self.animation_tick += self.animation_speed / FPS
-        if self.right and self.xdir == 0:
-            self.image = pygame.transform.flip(self.frames[0], True, False)
-        elif self.xdir == 0:
-            self.image = self.frames[0]
-        elif self.right and self.xdir == 1:
-            self.image = pygame.transform.flip(self.frames[self.cur_frame], True, False)
-
-    def collide_action(self, target):
-        pass
-
-    def get_effect(self, effect):
-        if not self.is_invulnerable():
-            self.effects.append(effect)
 
     def collide(self, xvel, yvel):
         if self.rect.x + self.rect.width // 2 < 0:
@@ -142,6 +94,70 @@ class LivingCreature(Creature, AnimatedSprite):
                     if yvel < 0:  # если движется вверх
                         self.rect.top = p.rect.bottom  # то не движется вверх
                         self.yvel = 0  # и энергия прыжка пропадает
+
+    def collide_action(self, target):
+        pass
+
+
+class LivingCreature(MovingCreature, AnimatedSprite):
+    def __init__(self, pos, *groups, image=load_image(r"tiles\tile1.png", colorkey=-1), health=100, col=1, row=1,
+                 scale=BASE_SCALE):
+        im = get_scaled_image(image, scale)
+        self.set_frames(im, col, row)
+        super().__init__(self.frames[0], pos, *groups, scale=1, is_rigid=False)
+        self.jump_power = 13
+
+        self.speed = 5
+        self.weapon = None
+
+        self.animation_tick = 0
+        self.animation_speed = 15001
+
+        self.health = health
+        self.max_health = health
+
+        self.invulnerable = 0
+        self.invulnerable_time = 2
+
+    def update_effects(self):
+        if self.is_invulnerable():
+            self.invulnerable -= 1 / FPS
+        super(LivingCreature, self).update_effects()
+
+    def update(self, *args, **kwargs):
+        super(LivingCreature, self).update(*args, **kwargs)
+
+        if not self.on_ground:
+            self.yvel += GRAVITY / 60
+        if self.animation_tick > 1000:
+            self.animation_tick = 0
+            self.update_frame()
+        self.set_image()
+
+        self.pos = (self.rect.x, self.rect.y)
+
+        self.draw_health_bar(args[0])
+
+    def move(self):
+        pass
+
+    def set_image(self):
+        if self.is_invulnerable():
+            if self.invulnerable * 20 % 4 <= 1:
+                self.image = self.image.copy()
+                self.image.set_alpha(30)
+                return
+        self.animation_tick += self.animation_speed / FPS
+        if self.right and self.xdir == 0:
+            self.image = pygame.transform.flip(self.frames[0], True, False)
+        elif self.xdir == 0:
+            self.image = self.frames[0]
+        elif self.right and self.xdir == 1:
+            self.image = pygame.transform.flip(self.frames[self.cur_frame], True, False)
+
+    def get_effect(self, effect):
+        if not self.is_invulnerable():
+            self.effects.append(effect)
 
     def jump(self):
         if self.on_ground:  # прыгаем, только когда можем оттолкнуться от земли
@@ -187,6 +203,7 @@ class LivingCreature(Creature, AnimatedSprite):
 class Player(LivingCreature):
     def __init__(self, pos, *groups):
         super(Player, self).__init__(pos, *groups, image=load_image(r"hero\hero.png"), col=4)
+        self.coins = 0
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -202,6 +219,11 @@ class Player(LivingCreature):
             self.xdir = 0
         self.xvel = self.speed * self.xdir
 
+    def get_coins(self, n=1):
+        s = pygame.mixer.Sound(r"data\sounds\get_coin.ogg")
+        s.play(loops=0)
+        self.coins += 1
+
     def die(self):
         super(Player, self).die()
         pygame.time.set_timer(GAME_OVER, 1000, 1)
@@ -212,50 +234,6 @@ class Player(LivingCreature):
             s.set_volume(0.5)
             s.play(loops=0)
         super().get_damage(dm)
-
-
-class Enemy(LivingCreature):
-    def __init__(self, pos, *groups, image=load_image(r"hero\hero.png"), col=4, row=1):
-        super(Enemy, self).__init__(pos, *groups, image=image, col=col, row=row)
-        self.jump_chance = 3
-
-    def move(self):
-        if roulette(self.jump_chance):
-            self.jump()
-        if self.xvel == 0:
-            self.right = not self.right
-        if self.right:
-            self.xdir = 1
-        else:
-            self.xdir = -1
-
-        self.xvel = self.speed * self.xdir
-
-
-class Slime(Enemy):
-    def __init__(self, pos, *groups):
-        super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2)
-        self.animation_speed = 6000
-        self.power = 20
-        self.invulnerable_time = 0
-
-    def set_image(self):
-        if self.yvel < 0:
-            self.cur_frame = 0
-        super(Slime, self).set_image()
-
-    def collide_action(self, target):
-        if isinstance(target, Player):
-            target.get_effect(Knockback(self, target))
-            target.get_damage(self.power)
-        elif isinstance(target, Slime):
-            for ef in target.effects:
-                if id(ef.dealer) == id(self):
-                    return
-            kb = Knockback(self, target, power=10)
-            if roulette(0.3):
-                target.xvel = 0
-            target.get_effect(kb)
 
 
 class Weapon(Creature):
@@ -320,12 +298,12 @@ class Gun(Weapon):
 
     def fire(self):
         self.play_fire_sound()
-        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, live_time=10 ** 2,
+        b = Bullet(self, load_image(r"weapons\bullet.png"), *self.groups(), speed=15, distanse=800,
                    damage=self.power + self.level)
 
 
 class Bullet(Creature):
-    def __init__(self, weapon: Weapon, image, *groups, speed=10, damage=10, live_time=20, scale=BASE_SCALE):
+    def __init__(self, weapon: Weapon, image, *groups, speed=10, damage=10, distanse=1000, scale=BASE_SCALE):
         if weapon.owner.right:
             self.pos = weapon.rect.topright
             self.right = True
@@ -338,12 +316,12 @@ class Bullet(Creature):
         self.weapon = weapon
         self.speed = speed
         self.damage = damage
-        self.live_time = live_time
+        self.distance = distanse
 
     def update(self, *args, **kwargs) -> None:
-        self.live_time -= 100 / FPS
+        self.distance -= self.speed
 
-        if self.live_time <= 0:
+        if self.distance <= 0:
             self.kill()
             return
         if self.right:
@@ -363,6 +341,68 @@ class Bullet(Creature):
                     self.kill()
 
 
+class Enemy(LivingCreature):
+    def __init__(self, pos, *groups, image=load_image(r"hero\hero.png"), col=4, row=1, drop=None):
+        super(Enemy, self).__init__(pos, *groups, image=image, col=col, row=row)
+        self.jump_chance = 3
+        self.drop = drop
+
+    def move(self):
+        if roulette(self.jump_chance):
+            self.jump()
+        if self.xvel == 0:
+            self.right = not self.right
+        if self.right:
+            self.xdir = 1
+        else:
+            self.xdir = -1
+
+        self.xvel = self.speed * self.xdir
+
+    def die(self):
+        if self.drop is not None:
+            p = self.rect.center
+            p = (p[0], p[1] - self.rect.h // 3)
+            drop = self.drop(p, *self.groups())
+        super(Enemy, self).die()
+
+
+class Slime(Enemy):
+    def __init__(self, pos, *groups, drop=None):
+        super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2, drop=drop)
+        self.animation_speed = 6000
+        self.power = 20
+        self.invulnerable_time = 0
+
+    def set_image(self):
+        if self.yvel < 0:
+            self.cur_frame = 0
+        super(Slime, self).set_image()
+
+    def collide_action(self, target):
+        if isinstance(target, Player):
+            target.get_effect(Knockback(self, target))
+            target.get_damage(self.power)
+        elif isinstance(target, Slime):
+            for ef in target.effects:
+                if id(ef.dealer) == id(self):
+                    return
+            kb = Knockback(self, target)
+            target.xvel = 0
+            target.get_effect(kb)
+
+
+class Coin(MovingCreature):
+    def __init__(self, pos, *groups):
+        super(Coin, self).__init__(load_image(r"others\coin.png"), pos, *groups)
+        self.cost = 1
+
+    def collide_action(self, target):
+        if isinstance(target, Player):
+            target.get_coins()
+            self.kill()
+
+
 class EnemySpawner:
     # mobs = [(Slime, 30(chance)), (Zombie, 10)]
     def __init__(self, spawn_points: list, group: pygame.sprite.Group, mobs):
@@ -380,7 +420,8 @@ class EnemySpawner:
             if i[1] >= n:
                 mob = i[0]
         spawn_point = choice(self.spawn_points)
-        sprite = mob(spawn_point, self.group)
+        sprite: Enemy
+        sprite = mob(spawn_point, self.group, drop=Coin)
 
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):

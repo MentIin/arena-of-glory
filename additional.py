@@ -25,7 +25,7 @@ class Effect:
 
 
 class Knockback(Effect):
-    def __init__(self, dealer, owner, duration=0.4, power=8):
+    def __init__(self, dealer, owner, duration=0.2, power=7):
         super(Knockback, self).__init__("knockback", duration, dealer, owner)
         self.power = power
 
@@ -67,6 +67,7 @@ def load_image(name, colorkey=-1):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
     image = pygame.image.load(fullname)
+    image.set_colorkey(colorkey)
     return image
 
 
