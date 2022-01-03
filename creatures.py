@@ -1,4 +1,6 @@
 import pygame
+from pygame.sprite import Sprite
+
 from additional import *
 from random import choice, randint
 
@@ -60,9 +62,6 @@ class LivingCreature(Creature, AnimatedSprite):
         self.rect.y += self.yvel
         self.collide(0, self.yvel)
 
-        if self.yvel < 0 and self.on_ground:
-            self.on_ground = False
-
         if not self.on_ground:
             self.yvel += GRAVITY / 60
         if self.animation_tick > 1000:
@@ -116,9 +115,12 @@ class LivingCreature(Creature, AnimatedSprite):
             self.xvel = 0
 
         for g in self.groups():
+            p: Sprite
             for p in g:
                 if id(p) == id(self):
                     continue
+                if p.rect.collidepoint(self.rect.bottomleft[0] + self.rect.w // 2, self.rect.bottomleft[1] + 1):
+                    self.on_ground = True
                 if pygame.sprite.collide_rect(self, p):  # если есть пересечение платформы с игроком
                     if isinstance(p, LivingCreature):
                         self.collide_action(p)
