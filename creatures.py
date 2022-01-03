@@ -25,14 +25,16 @@ class Tile(Creature):
 
 
 class MovingCreature(Creature):
-    def __init__(self, image, pos, *groups, scale=BASE_SCALE, is_rigid=False, right=True):
-        super(MovingCreature, self).__init__(image, pos, *groups, scale=scale, is_rigid=is_rigid, right=right)
+    def __init__(self, image, pos, *groups, scale=BASE_SCALE, is_rigid=False, right=True, has_mass=True):
+        super(MovingCreature, self).__init__(image, pos, *groups, scale=scale, is_rigid=is_rigid,
+                                             right=right)
         self.xvel = 0
         self.yvel = 0
         self.on_ground = False
         self.xdir = 0  # лево, на месте или право
         self.effects = []
         self.effects_force = (0, 0)
+        self.has_mass = has_mass
 
     def update(self, *args, **kwargs):
         self.move()
@@ -46,6 +48,9 @@ class MovingCreature(Creature):
         self.collide(self.xvel, 0)
         self.rect.y += self.yvel
         self.collide(0, self.yvel)
+
+        if not self.on_ground and self.has_mass:
+            self.yvel += GRAVITY / 60
 
     def move(self):
         pass
@@ -67,11 +72,12 @@ class MovingCreature(Creature):
             self.xvel = 0
 
         for g in self.groups():
-            p: Sprite
+            p: Creature
             for p in g:
                 if id(p) == id(self):
                     continue
-                if p.rect.collidepoint(self.rect.bottomleft[0] + self.rect.w // 2, self.rect.bottomleft[1] + 1):
+                if p.rigid and p.rect.collidepoint(self.rect.bottomleft[0] + self.rect.w // 2,
+                                                   self.rect.bottomleft[1] + 1):
                     self.on_ground = True
                 if pygame.sprite.collide_rect(self, p):  # если есть пересечение платформы с игроком
                     if isinstance(p, LivingCreature):
@@ -127,8 +133,6 @@ class LivingCreature(MovingCreature, AnimatedSprite):
     def update(self, *args, **kwargs):
         super(LivingCreature, self).update(*args, **kwargs)
 
-        if not self.on_ground:
-            self.yvel += GRAVITY / 60
         if self.animation_tick > 1000:
             self.animation_tick = 0
             self.update_frame()
@@ -183,6 +187,11 @@ class LivingCreature(MovingCreature, AnimatedSprite):
         if self.weapon is not None:
             self.weapon.activate()
 
+    def heal(self, n):
+        self.health += n
+        if self.health > self.max_health:
+            self.health = self.max_health
+
     def draw_health_bar(self, screen):
         a = (self.health / self.max_health - 0.5) * 255
 
@@ -194,6 +203,8 @@ class LivingCreature(MovingCreature, AnimatedSprite):
             g = 255 + a * 2
         if r > 255:
             r = 255
+        if r < 0:
+            r = 0
         pygame.draw.rect(screen, pygame.color.Color(int(r), int(g), 0), (self.rect.x, self.rect.y - 12,
                                                                          self.rect.width * self.health // self.max_health,
                                                                          10))
@@ -387,12 +398,16 @@ class Slime(Enemy):
             for ef in target.effects:
                 if id(ef.dealer) == id(self):
                     return
-            kb = Knockback(self, target)
+            kb = Knockback(self, target, power=4)
             target.xvel = 0
             target.get_effect(kb)
 
 
-class Coin(MovingCreature):
+class Loot(MovingCreature):
+    pass
+
+
+class Coin(Loot):
     def __init__(self, pos, *groups):
         super(Coin, self).__init__(load_image(r"others\coin.png"), pos, *groups)
         self.cost = 1
@@ -400,6 +415,19 @@ class Coin(MovingCreature):
     def collide_action(self, target):
         if isinstance(target, Player):
             target.get_coins()
+            self.kill()
+
+
+class Heart(Loot):
+    def __init__(self, pos, *groups):
+        super(Heart, self).__init__(load_image(r"others\heart.png"), pos, *groups)
+        self.power = 20
+
+    def collide_action(self, target):
+        if isinstance(target, Player):
+            target.heal(self.power)
+            s = pygame.mixer.Sound(r"data\sounds\heal.mp3")
+            s.play(loops=0)
             self.kill()
 
 
@@ -421,7 +449,11 @@ class EnemySpawner:
                 mob = i[0]
         spawn_point = choice(self.spawn_points)
         sprite: Enemy
-        sprite = mob(spawn_point, self.group, drop=Coin)
+        if roulette(80):
+            dr = Coin
+        else:
+            dr = Heart
+        sprite = mob(spawn_point, self.group, drop=dr)
 
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):

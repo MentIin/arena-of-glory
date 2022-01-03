@@ -29,7 +29,6 @@ class StartScene:
                         if btn.check_focus():
                             btn.action()
 
-
             screen.fill(pygame.color.Color("darkgreen"))
 
             scene_sprites.update()
@@ -54,17 +53,17 @@ class GameScane:
 
         player, x, y, spawn_points = generate_level(load_level("simple_arena.map"), creatures, tile_size=TILE_SIZE)
         player.weapon = Gun(player, creatures)
-        player.health = 500
-        player.max_health = 500
+        player.weapon.power *= 2
+
         spawner = EnemySpawner(spawn_points, creatures, [(Slime, 10)])
         spawner.spawn_mob()
-
 
         space_pressed = False
 
         while running:
+            print(player.coins)
             clock.tick(FPS)
-            if roulette(0.1):
+            if roulette(0.4):
                 spawner.spawn_mob()
 
             for event in pygame.event.get():
@@ -81,6 +80,7 @@ class GameScane:
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_SPACE:
                         space_pressed = False
+
                 if event.type == GAME_OVER:
                     running = False
             if space_pressed:
