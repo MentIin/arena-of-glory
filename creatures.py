@@ -4,7 +4,7 @@ from random import choice, randint
 
 
 class Creature(pygame.sprite.Sprite):
-    def __init__(self, image, pos, *groups, scale=5, is_rigid=False, right=True):
+    def __init__(self, image, pos, *groups, scale=BASE_SCALE, is_rigid=False, right=True):
         super().__init__(*groups)
         self.orig_image = get_scaled_image(image, scale)
 
@@ -18,13 +18,13 @@ class Creature(pygame.sprite.Sprite):
 
 
 class Tile(Creature):
-    def __init__(self, pos, *groups, scale=5):
+    def __init__(self, pos, *groups, scale=BASE_SCALE):
         super().__init__(load_image(r"tiles\tile1.png"), pos, *groups, scale=scale, is_rigid=True)
 
 
 class LivingCreature(Creature, AnimatedSprite):
-    def __init__(self, pos, *groups, image=load_image(r"tiles\tile1.png"), health=100, col=1, row=1):
-        im = get_scaled_image(image, 5)
+    def __init__(self, pos, *groups, image=load_image(r"tiles\tile1.png"), health=100, col=1, row=1, scale=BASE_SCALE):
+        im = get_scaled_image(image, scale)
         self.set_frames(im, col, row)
         super().__init__(self.frames[0], pos, *groups, scale=1, is_rigid=False)
         self.xvel = 0
@@ -257,7 +257,7 @@ class Slime(Enemy):
 
 
 class Weapon(Creature):
-    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=1000, level=1,
+    def __init__(self, owner: Creature, *groups, scale=BASE_SCALE, reload_speed=1000, level=1,
                  image=load_image(r"tiles\tile1.png")):
         super().__init__(image, owner.pos, *groups, scale=scale, is_rigid=False)
         self.owner = owner
@@ -303,7 +303,7 @@ class Weapon(Creature):
 
 
 class Gun(Weapon):
-    def __init__(self, owner: Creature, *groups, scale=5, reload_speed=5000, level=1):
+    def __init__(self, owner: Creature, *groups, scale=BASE_SCALE, reload_speed=5000, level=1):
         super(Gun, self).__init__(owner, *groups, scale=scale, reload_speed=reload_speed, level=1,
                                   image=load_image(r"weapons\gun.png"))
         self.fire_sound = r"data\sounds\gun_with_silencer.mp3"
@@ -323,7 +323,7 @@ class Gun(Weapon):
 
 
 class Bullet(Creature):
-    def __init__(self, weapon: Weapon, image, *groups, speed=10, damage=10, live_time=20, scale=5):
+    def __init__(self, weapon: Weapon, image, *groups, speed=10, damage=10, live_time=20, scale=BASE_SCALE):
         if weapon.owner.right:
             self.pos = weapon.rect.topright
             self.right = True
@@ -379,9 +379,6 @@ class EnemySpawner:
                 mob = i[0]
         spawn_point = choice(self.spawn_points)
         sprite = mob(spawn_point, self.group)
-
-
-
 
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):

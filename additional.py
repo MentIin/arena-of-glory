@@ -5,9 +5,12 @@ from random import random
 
 WIDTH, HEIGHT = 1200, 800
 FPS = 60
-TILE_SIZE = 50
+BASE_SCALE = 3
+TILE_SIZE = BASE_SCALE * 16
 GRAVITY = 25
+
 GAME_OVER = pygame.USEREVENT + 1
+
 
 class Effect:
     def __init__(self, name, duration, dealer, owner):
@@ -25,7 +28,6 @@ class Knockback(Effect):
     def __init__(self, dealer, owner, duration=0.4, power=8):
         super(Knockback, self).__init__("knockback", duration, dealer, owner)
         self.power = power
-
 
     def update(self):
         if self.duration == self.start_duration:
