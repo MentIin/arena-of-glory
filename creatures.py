@@ -234,7 +234,7 @@ class Slime(Enemy):
     def __init__(self, pos, *groups):
         super(Slime, self).__init__(pos, *groups, image=load_image(r"enemies\slime.png"), col=2)
         self.animation_speed = 6000
-        self.power = 25
+        self.power = 20
         self.invulnerable_time = 0
 
     def set_image(self):
@@ -247,7 +247,13 @@ class Slime(Enemy):
             target.get_effect(Knockback(self, target))
             target.get_damage(self.power)
         elif isinstance(target, Slime):
-            target.get_effect(Knockback(self, target))
+            for ef in target.effects:
+                if id(ef.dealer) == id(self):
+                    return
+            kb = Knockback(self, target, power=10)
+            if roulette(0.3):
+                target.xvel = 0
+            target.get_effect(kb)
 
 
 class Weapon(Creature):

@@ -54,6 +54,8 @@ class GameScane:
 
         player, x, y, spawn_points = generate_level(load_level("simple_arena.map"), creatures, tile_size=80)
         player.weapon = Gun(player, creatures, scale=5)
+        player.health = 500
+        player.max_health = 500
         spawner = EnemySpawner(spawn_points, creatures, [(Slime, 10)])
         spawner.spawn_mob()
 
@@ -62,7 +64,7 @@ class GameScane:
 
         while running:
             clock.tick(FPS)
-            if roulette(0.2):
+            if roulette(0.3):
                 spawner.spawn_mob()
 
             for event in pygame.event.get():
