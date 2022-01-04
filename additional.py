@@ -2,6 +2,7 @@ import pygame
 import os
 import sys
 from random import random
+import csv
 
 WIDTH, HEIGHT = 1200, 800
 FPS = 60
@@ -108,3 +109,10 @@ def draw_text(surf, text, size, pos, font_name=None, color="white"):
     text_rect = text_surface.get_rect()
     text_rect.topleft = (x, y)
     surf.blit(text_surface, text_rect)
+
+
+def get_stat(name):
+    with open('data\stats.csv', encoding="utf8") as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
+        for player in reader:
+            return player[name]
