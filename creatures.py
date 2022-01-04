@@ -237,6 +237,8 @@ class Player(LivingCreature):
 
     def die(self):
         super(Player, self).die()
+        if self.coins > int(get_stat("record")):
+            set_stat("record", self.coins)
         pygame.time.set_timer(GAME_OVER, 1000, 1)
 
     def get_damage(self, dm):
