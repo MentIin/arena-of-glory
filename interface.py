@@ -36,7 +36,7 @@ class CoinCounter(pygame.sprite.Sprite):
         super(CoinCounter, self).__init__(*groups)
         self.pos = pos
         self.image = pygame.surface.Surface((160, 40))
-        self.image.set_colorkey((0, 0, 0))
+        self.image.set_colorkey("grey")
 
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
@@ -60,7 +60,7 @@ class CoinCounter(pygame.sprite.Sprite):
             self.update_image()
 
     def update_image(self):
-        self.image.fill("black")
+        self.image.fill("grey")
         self.image.blit(get_scaled_image(load_image(r"others\coin.png"), 5), (0, 0))
         draw_text(self.image, str(self.coins), self.text_size, (40, 0), color=(255, 215, 0),
                   font_name=r"data/fonts/Teletactile.ttf")
