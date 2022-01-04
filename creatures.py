@@ -357,6 +357,7 @@ class Enemy(LivingCreature):
         super(Enemy, self).__init__(pos, *groups, image=image, col=col, row=row)
         self.jump_chance = 3
         self.drop = drop
+        self.use_weapon_chance = 5
 
     def move(self):
         if roulette(self.jump_chance):
@@ -369,6 +370,11 @@ class Enemy(LivingCreature):
             self.xdir = -1
 
         self.xvel = self.speed * self.xdir
+
+    def update(self, *args, **kwargs):
+        super(Enemy, self).update(*args, **kwargs)
+        if roulette(self.use_weapon_chance):
+            self.use_weapon()
 
     def die(self):
         if self.drop is not None:
@@ -453,7 +459,11 @@ class EnemySpawner:
             dr = Coin
         else:
             dr = Heart
+
         sprite = mob(spawn_point, self.group, drop=dr)
+        if isinstance(sprite, Slime):
+            if roulette(6):
+                sprite.weapon = Gun(sprite, self.group)
 
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):

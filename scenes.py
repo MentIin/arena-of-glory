@@ -67,9 +67,7 @@ class GameScane:
 
         while running:
             clock.tick(FPS)
-            if roulette(15):
-                Coin((randint(0, 1000), 0), creatures)
-            if roulette(0.4):
+            if roulette(1):
                 spawner.spawn_mob()
 
             for event in pygame.event.get():
