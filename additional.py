@@ -112,7 +112,28 @@ def draw_text(surf, text, size, pos, font_name=None, color="white"):
 
 
 def get_stat(name):
-    with open('data\stats.csv', encoding="utf8") as csvfile:
+    with open(r"data\stats.csv", encoding="utf8") as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
         for player in reader:
             return player[name]
+
+
+def set_stat(name, value):
+    with open(r"data\stats.csv", "r") as csvfile:
+        reader = csv.reader(csvfile, delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+        data = []
+        res = {}
+        for player in reader:
+            data.append(player)
+        for i in range(len(data[0])):
+            if data[0][i] == name:
+                res[data[0][i]] = value
+            else:
+                res[data[0][i]] = res[data[1][i]]
+
+        with open(r"data\stats.csv", "w") as csvfile:
+            writer = csv.DictWriter(
+                csvfile, fieldnames=list(res.keys()),
+                delimiter=';', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writeheader()
+            writer.writerow(res)
