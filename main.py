@@ -1,10 +1,11 @@
 import pygame
-import scenes
+from scenes import StartScene
 from additional import HEIGHT, WIDTH
 
 
 pygame.init()
+pygame.font.init()
 size = WIDTH, HEIGHT
 screen = pygame.display.set_mode(size)
 
-scenes.StartScene(screen)
+StartScene(screen)

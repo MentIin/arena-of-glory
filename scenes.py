@@ -1,7 +1,9 @@
+from random import randint
+
 import pygame
 from additional import *
-from interface import Button
-from creatures import Player, generate_level, EnemySpawner, Gun, Enemy, Slime
+from interface import Button, CoinCounter
+from creatures import *
 
 
 class StartScene:
@@ -50,10 +52,13 @@ class GameScane:
 
         creatures = pygame.sprite.Group()
         buttons = pygame.sprite.Group()
+        interface = pygame.sprite.Group()
 
         player, x, y, spawn_points = generate_level(load_level("simple_arena.map"), creatures, tile_size=TILE_SIZE)
         player.weapon = Gun(player, creatures)
         player.weapon.power *= 2
+        player.weapon.reload_speed *= 2
+        counter = CoinCounter((WIDTH - 165, 0), interface)
 
         spawner = EnemySpawner(spawn_points, creatures, [(Slime, 10)])
         spawner.spawn_mob()
@@ -61,8 +66,9 @@ class GameScane:
         space_pressed = False
 
         while running:
-            print(player.coins)
             clock.tick(FPS)
+            if roulette(15):
+                Coin((randint(0, 1000), 0), creatures)
             if roulette(0.4):
                 spawner.spawn_mob()
 
@@ -90,4 +96,8 @@ class GameScane:
 
             creatures.update(screen)
             creatures.draw(screen)
+
+            interface.update(player_coins=player.coins)
+            interface.draw(screen)
+
             pygame.display.flip()
