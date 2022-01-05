@@ -12,7 +12,7 @@ GRAVITY = 25
 
 GAME_OVER = pygame.USEREVENT + 1
 
-LEVELS = ["1.map", "2.map", "3.map"]
+LEVELS = ["1.txt", "2.txt", "3.txt"]
 
 
 class Effect:
