@@ -67,8 +67,7 @@ class GameScene:
 
         while running:
             clock.tick(FPS)
-            if roulette(1):
-                spawner.spawn_mob()
+            spawner.update()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -122,6 +121,7 @@ class GameOverScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    terminate()
                 if event.type == pygame.MOUSEBUTTONUP:
                     for btn in buttons:
                         if btn.check_focus():

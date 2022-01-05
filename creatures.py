@@ -396,6 +396,7 @@ class Slime(Enemy):
         self.animation_speed = 6000
         self.power = 20
         self.invulnerable_time = 0
+        self.speed = 4
 
     def set_image(self):
         if self.yvel < 0:
@@ -453,6 +454,7 @@ class EnemySpawner:
         for i in range(1, len(mobs)):
             self.mobs[i] = (self.mobs[i][0], self.mobs[i][1] + self.mobs[i - 1][1])
         self.sum_chance = sum([i[1] for i in self.mobs])
+        self.tiles = len(self.group)
 
     def spawn_mob(self):
         n = randint(0, self.sum_chance)
@@ -470,6 +472,24 @@ class EnemySpawner:
         if isinstance(sprite, Slime):
             if roulette(6):
                 sprite.weapon = Gun(sprite, self.group)
+        sprite.right = choice([True, False])
+
+    def update(self):
+        cur_mobs = len(self.group) - self.tiles
+        if cur_mobs == 0:
+            self.spawn_mob()
+        elif cur_mobs <= 3:
+            if roulette(4 * FPS / 60):
+                self.spawn_mob()
+        elif cur_mobs <= 10:
+            if roulette(0.8 * FPS / 60):
+                self.spawn_mob()
+        elif cur_mobs <= 30:
+            if roulette(0.6 * FPS / 60):
+                self.spawn_mob()
+        else:
+            if roulette(0.2 * FPS / 60):
+                self.spawn_mob()
 
 
 def generate_level(level, *groups, tile_size=TILE_SIZE):
