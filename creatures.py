@@ -301,6 +301,7 @@ class Gun(Weapon):
                                   image=load_image(r"weapons\gun.png"))
         self.fire_sound = r"data\sounds\gun_with_silencer.mp3"
         self.fire_sound_duration = 400
+        self.power = 20
 
     def update(self, *args, **kwargs) -> None:
         super(Gun, self).update(*args, **kwargs)

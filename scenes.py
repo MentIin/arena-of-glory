@@ -58,9 +58,7 @@ class GameScene:
 
         player, x, y, spawn_points = generate_level(load_level(level_name), creatures, tile_size=TILE_SIZE)
         player.weapon = Gun(player, creatures)
-        player.weapon.power *= 2
-        player.weapon.reload_speed *= 2
-        counter = CoinCounter((WIDTH - 165, 0), interface)
+        counter = CoinCounter((WIDTH - 165, 5), interface)
 
         spawner = EnemySpawner(spawn_points, creatures, [(Slime, 10)])
         spawner.spawn_mob()
