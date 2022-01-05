@@ -460,7 +460,7 @@ class EnemySpawner:
                 mob = i[0]
         spawn_point = choice(self.spawn_points)
         sprite: Enemy
-        if roulette(80):
+        if roulette(85):
             dr = Coin
         else:
             dr = Heart

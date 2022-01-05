@@ -12,6 +12,8 @@ GRAVITY = 25
 
 GAME_OVER = pygame.USEREVENT + 1
 
+LEVELS = ["simple_arena.map"]
+
 
 class Effect:
     def __init__(self, name, duration, dealer, owner):
@@ -102,12 +104,14 @@ def roulette(chance):
     return False
 
 
-def draw_text(surf, text, size, pos, font_name=None, color="white"):
+def draw_text(surf, text, size, pos, font_name=None, color="white", center=False):
     x, y = pos
     font = pygame.font.Font(font_name, size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
     text_rect.topleft = (x, y)
+    if center:
+        text_rect.center = (x, y)
     surf.blit(text_surface, text_rect)
 
 
