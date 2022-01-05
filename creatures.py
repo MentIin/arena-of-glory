@@ -345,9 +345,12 @@ class Bullet(Creature):
         self.collide()
 
     def collide(self):
+
         for p in self.groups()[0]:
             if pygame.sprite.collide_rect(self, p):
                 if isinstance(p, LivingCreature):
+                    if isinstance(self.weapon.owner, Enemy) and isinstance(p, Enemy):
+                        continue
                     p.get_damage(self.damage)
                     self.kill()
                 elif p.rigid:  # проверяем только "твёрдые" спрайты
