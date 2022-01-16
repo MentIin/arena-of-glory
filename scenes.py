@@ -30,6 +30,8 @@ class StartScene:
                     for btn in buttons:
                         if btn.check_focus():
                             btn.action()
+                if event.type == pygame.KEYDOWN:
+                    self.load_game()
 
             screen.fill(pygame.color.Color("darkgreen"))
 
