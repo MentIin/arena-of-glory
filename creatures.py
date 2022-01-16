@@ -288,9 +288,11 @@ class Weapon(Creature):
         if self.fire_sound is not None:
             if self.fire_sound_duration is not None:
                 s = pygame.mixer.Sound(self.fire_sound)
+                s.set_volume(0.5)
                 s.play(loops=0, maxtime=self.fire_sound_duration)
             else:
                 s = pygame.mixer.Sound(self.fire_sound)
+                s.set_volume(0.5)
                 s.play(loops=0)
 
 
@@ -345,7 +347,6 @@ class Bullet(Creature):
         self.collide()
 
     def collide(self):
-
         for p in self.groups()[0]:
             if pygame.sprite.collide_rect(self, p):
                 if isinstance(p, LivingCreature):
