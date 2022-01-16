@@ -478,16 +478,16 @@ class EnemySpawner:
         if cur_mobs == 0:
             self.spawn_mob()
         elif cur_mobs <= 3:
-            if roulette(4 * FPS / 60):
+            if roulette(3 * FPS / 60):
                 self.spawn_mob()
         elif cur_mobs <= 10:
-            if roulette(0.8 * FPS / 60):
+            if roulette(0.7 * FPS / 60):
                 self.spawn_mob()
         elif cur_mobs <= 30:
-            if roulette(0.6 * FPS / 60):
+            if roulette(0.5 * FPS / 60):
                 self.spawn_mob()
         else:
-            if roulette(0.2 * FPS / 60):
+            if roulette(0.1 * FPS / 60):
                 self.spawn_mob()
 
 
